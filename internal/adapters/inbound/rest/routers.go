@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/iakigarci/go-ddd-microservice-template/config"
 	di "github.com/iakigarci/go-ddd-microservice-template/internal"
+	"github.com/iakigarci/go-ddd-microservice-template/internal/adapters/inbound/rest/v1/handlers"
 )
 
 type Router struct {
@@ -26,7 +27,27 @@ func New(config *config.Config, container *di.Container) *Router {
 	r.Use(gin.Recovery())
 	r.Use(CORSMiddleware())
 
+	routeV1(r)
+
 	r.Run(fmt.Sprintf(":%d", config.HTTP.Port))
 
 	return router
+}
+
+func routeV1(r *gin.Engine) {
+	indexRoutes := r.Group("/")
+	{
+		indexRoutes.GET("/health", handlers.HealthCheck)
+	}
+
+	authRoutes := r.Group("/auth")
+	{
+		authRoutes.POST("/login", handlers.Login)
+	}
+
+	diagnosticRoutes := r.Group("/diagnostic")
+	{
+		diagnosticRoutes.GET("/", handlers.GetDiagnostics)
+		diagnosticRoutes.POST("/", handlers.CreateDiagnostic)
+	}
 }
