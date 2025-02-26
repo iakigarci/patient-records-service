@@ -29,35 +29,39 @@ func New(config *config.Config, container *di.Container) *Router {
 	r.Use(gin.Recovery())
 	r.Use(CORSMiddleware())
 
-	router.routeV1()
+	v1 := r.Group("/v1")
+	{
+		router.indexRoutes(v1)
+		router.authRoutes(v1)
+	}
 
 	r.Run(fmt.Sprintf(":%d", config.HTTP.Port))
 
 	return router
 }
 
-func (r *Router) routeV1() {
-	indexRoutes := r.Router.Group("/")
+func (r *Router) indexRoutes(rg *gin.RouterGroup) {
+	indexRoutes := rg.Group("/")
 	{
 		indexRoutes.GET("/health", handlers.HealthCheck)
 	}
+}
 
+func (r *Router) authRoutes(rg *gin.RouterGroup) {
 	userService := user.New(
 		user.WithUserRepository(r.container.UserRepository),
 		user.WithLogger(r.container.Logger),
 	)
-	authService := auth.New(userService, []byte("secret"))
+	authService := auth.New(
+		userService,
+		[]byte("secret"),
+		r.container.Logger,
+	)
 
 	authHandler := handlers.NewAuthHandler(authService, userService)
 
-	authRoutes := r.Router.Group("/auth")
+	authRoutes := rg.Group("/auth")
 	{
 		authRoutes.POST("/login", authHandler.Login)
-	}
-
-	diagnosticRoutes := r.Router.Group("/diagnostic")
-	{
-		diagnosticRoutes.GET("/", handlers.GetDiagnostics)
-		diagnosticRoutes.POST("/", handlers.CreateDiagnostic)
 	}
 }
