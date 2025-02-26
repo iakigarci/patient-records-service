@@ -7,6 +7,8 @@ import (
 	"github.com/iakigarci/go-ddd-microservice-template/config"
 	di "github.com/iakigarci/go-ddd-microservice-template/internal"
 	"github.com/iakigarci/go-ddd-microservice-template/internal/adapters/inbound/rest/v1/handlers"
+	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/services/auth"
+	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/services/user"
 )
 
 type Router struct {
@@ -27,25 +29,33 @@ func New(config *config.Config, container *di.Container) *Router {
 	r.Use(gin.Recovery())
 	r.Use(CORSMiddleware())
 
-	routeV1(r)
+	router.routeV1()
 
 	r.Run(fmt.Sprintf(":%d", config.HTTP.Port))
 
 	return router
 }
 
-func routeV1(r *gin.Engine) {
-	indexRoutes := r.Group("/")
+func (r *Router) routeV1() {
+	indexRoutes := r.Router.Group("/")
 	{
 		indexRoutes.GET("/health", handlers.HealthCheck)
 	}
 
-	authRoutes := r.Group("/auth")
+	userService := user.New(
+		user.WithUserRepository(r.container.UserRepository),
+		user.WithLogger(r.container.Logger),
+	)
+	authService := auth.New(userService, []byte("secret"))
+
+	authHandler := handlers.NewAuthHandler(authService, userService)
+
+	authRoutes := r.Router.Group("/auth")
 	{
-		authRoutes.POST("/login", handlers.Login)
+		authRoutes.POST("/login", authHandler.Login)
 	}
 
-	diagnosticRoutes := r.Group("/diagnostic")
+	diagnosticRoutes := r.Router.Group("/diagnostic")
 	{
 		diagnosticRoutes.GET("/", handlers.GetDiagnostics)
 		diagnosticRoutes.POST("/", handlers.CreateDiagnostic)

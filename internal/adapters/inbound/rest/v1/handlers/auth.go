@@ -11,7 +11,7 @@ type AuthHandler struct {
 	authService ports.AuthService
 }
 
-func New(authService ports.AuthService) *AuthHandler {
+func NewAuthHandler(authService ports.AuthService, userService ports.UserService) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
 	}
@@ -21,7 +21,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	email := c.PostForm("email")
 	password := c.PostForm("password")
 
-	token, err := h.authService.Login(c.Request.Context(), email, password)
+	token, err := h.authService.GenerateToken(c.Request.Context(), email, password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return

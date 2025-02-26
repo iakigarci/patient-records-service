@@ -6,17 +6,21 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/models/entities"
+	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/ports"
+	"go.uber.org/zap"
 )
 
 type authService struct {
-	userRepository user.UserRepository
-	jwtSecret      []byte
+	userService ports.UserService
+	jwtSecret   []byte
+	logger      *zap.Logger
 }
 
-func New(userRepository user.UserRepository, jwtSecret []byte) *authService {
+func New(userService ports.UserService, jwtSecret []byte, logger *zap.Logger) *authService {
 	return &authService{
-		userRepository: userRepository,
-		jwtSecret:      jwtSecret,
+		userService: userService,
+		jwtSecret:   jwtSecret,
+		logger:      logger,
 	}
 }
 
@@ -32,6 +36,7 @@ func (svc *authService) GenerateToken(user *entities.User) (string, error) {
 
 	tokenString, err := token.SignedString(svc.jwtSecret)
 	if err != nil {
+		svc.logger.Error("failed to generate token", zap.Error(err))
 		return "", err
 	}
 
@@ -43,16 +48,27 @@ func (svc *authService) ValidateToken(tokenString string) (string, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return s.jwtSecret, nil
+		return svc.jwtSecret, nil
 	})
 
 	if err != nil {
+		svc.logger.Error("failed to validate token", zap.Error(err))
 		return "", err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims["user_id"].(string), nil
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		err = fmt.Errorf("invalid token")
+		svc.logger.Error(err.Error())
+		return "", err
 	}
 
-	return "", fmt.Errorf("invalid token")
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		err = fmt.Errorf("invalid user id")
+		svc.logger.Error(err.Error())
+		return "", err
+	}
+
+	return userID, nil
 }
