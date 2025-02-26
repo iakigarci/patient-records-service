@@ -5,10 +5,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/iakigarci/go-ddd-microservice-template/config"
+	_ "github.com/iakigarci/go-ddd-microservice-template/docs"
 	di "github.com/iakigarci/go-ddd-microservice-template/internal"
 	"github.com/iakigarci/go-ddd-microservice-template/internal/adapters/inbound/rest/v1/handlers"
 	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/services/auth"
 	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/services/user"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Router struct {
@@ -33,11 +36,19 @@ func New(config *config.Config, container *di.Container) *Router {
 	{
 		router.indexRoutes(v1)
 		router.authRoutes(v1)
+		router.swaggerRoutes(v1)
 	}
 
 	r.Run(fmt.Sprintf(":%d", config.HTTP.Port))
 
 	return router
+}
+
+func (r *Router) swaggerRoutes(rg *gin.RouterGroup) {
+	swaggerRoutes := rg.Group("/swagger")
+	{
+		swaggerRoutes.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 }
 
 func (r *Router) indexRoutes(rg *gin.RouterGroup) {

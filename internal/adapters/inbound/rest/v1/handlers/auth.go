@@ -7,25 +7,67 @@ import (
 	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/ports"
 )
 
-type AuthHandler struct {
-	authService ports.AuthService
+type LoginRequest struct {
+	Email    string `json:"email" binding:"required" example:"user@example.com"`
+	Password string `json:"password" binding:"required" example:"password123"`
 }
 
-func NewAuthHandler(authService ports.AuthService, userService ports.UserService) *AuthHandler {
+type LoginResponse struct {
+	Token string `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
+}
+
+// @Summary User login
+// @Description Authenticate user and return JWT token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param login body LoginRequest true "Login credentials"
+// @Success 200 {object} LoginResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Router /v1/auth/login [post]
+
+type AuthHandler struct {
+	authService ports.AuthService
+	userService ports.UserService
+}
+
+func NewAuthHandler(as ports.AuthService, us ports.UserService) *AuthHandler {
 	return &AuthHandler{
-		authService: authService,
+		authService: as,
+		userService: us,
 	}
 }
 
+// Login godoc
+// @Summary User login
+// @Description Authenticate user and return JWT token
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param login body LoginRequest true "Login credentials"
+// @Success 200 {object} LoginResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Router /v1/auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
-	email := c.PostForm("email")
-	password := c.PostForm("password")
-
-	token, err := h.authService.GenerateToken(c.Request.Context(), email, password)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+	var req LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	user, err := h.userService.GetUserByEmail(c.Request.Context(), req.Email)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Invalid credentials"})
+		return
+	}
+
+	token, err := h.authService.GenerateToken(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Error generating token"})
+		return
+	}
+
+	c.JSON(http.StatusOK, LoginResponse{Token: token})
 }
