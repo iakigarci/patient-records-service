@@ -29,6 +29,11 @@ type Config struct {
 	HTTP     HTTPConfig     `mapstructure:"http"`
 	Postgres DatabaseConfig `mapstructure:"postgres"`
 	Logging  LogConfig      `mapstructure:"logging"`
+	Hash     HashConfig     `mapstructure:"hash"`
+}
+
+type HashConfig struct {
+	Secret string `mapstructure:"secret"`
 }
 
 type AppConfig struct {

@@ -65,7 +65,7 @@ func (r *Router) authRoutes(rg *gin.RouterGroup) {
 	)
 	authService := auth.New(
 		userService,
-		[]byte("secret"),
+		[]byte(r.container.Config.Hash.Secret),
 		r.container.Logger,
 	)
 
