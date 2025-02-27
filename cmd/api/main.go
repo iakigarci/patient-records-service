@@ -6,6 +6,7 @@ import (
 	"github.com/iakigarci/go-ddd-microservice-template/config"
 	di "github.com/iakigarci/go-ddd-microservice-template/internal"
 	http_gin "github.com/iakigarci/go-ddd-microservice-template/internal/adapters/inbound/rest"
+	"github.com/iakigarci/go-ddd-microservice-template/internal/adapters/outbound/postgres"
 	httpserver "github.com/iakigarci/go-ddd-microservice-template/pkg/http"
 	"github.com/iakigarci/go-ddd-microservice-template/pkg/logger"
 	"go.uber.org/zap"
@@ -30,8 +31,16 @@ func main() {
 }
 
 func getDIContainer(cfg *config.Config, logger *zap.Logger) *di.Container {
+	dbClient, err := postgres.NewClient(cfg, logger)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	userRepository := postgres.NewUserRepository(dbClient.DB)
+
 	return di.NewContainer(cfg,
 		logger,
+		userRepository,
 	)
 }
 
