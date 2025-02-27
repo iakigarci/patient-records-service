@@ -53,7 +53,7 @@ type DatabaseConfig struct {
 	Driver   string   `mapstructure:"driver"`
 	Host     string   `mapstructure:"host"`
 	Port     int      `mapstructure:"port"`
-	Name     string   `mapstructure:"name"`
+	DBName   string   `mapstructure:"db"`
 	User     string   `mapstructure:"user"`
 	Password Password `mapstructure:"password"`
 	SSLMode  string   `mapstructure:"ssl_mode"`

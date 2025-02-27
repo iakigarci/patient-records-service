@@ -25,7 +25,7 @@ type Postgres struct {
 	logger *zap.Logger
 }
 
-func New(config *config.Config, logger *zap.Logger) (*Postgres, error) {
+func NewClient(config *config.Config, logger *zap.Logger) (*Postgres, error) {
 	postgres, err := initPg(config, logger)
 	if err != nil {
 		logger.Error("failed to initialize postgres client", zap.Error(err))
@@ -42,18 +42,28 @@ func initPg(config *config.Config, logger *zap.Logger) (*Postgres, error) {
 		logger:       logger,
 	}
 
+	logger.Info("Postgres connection string", zap.String("connection_string", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		config.Postgres.Host,
+		config.Postgres.Port,
+		config.Postgres.User,
+		config.Postgres.Password,
+		config.Postgres.DBName,
+		config.Postgres.SSLMode,
+	)))
+
 	var err error
 	for pg.connAttempts > 0 {
-		pg.DB, err = sql.Open("postgres",
-			fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-				config.Postgres.Host,
-				config.Postgres.Port,
-				config.Postgres.User,
-				config.Postgres.Password,
-				config.Postgres.Name,
-				config.Postgres.SSLMode,
-			),
+		connectionString := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+			config.Postgres.Host,
+			config.Postgres.Port,
+			config.Postgres.User,
+			config.Postgres.Password,
+			config.Postgres.DBName,
+			config.Postgres.SSLMode,
 		)
+		pg.logger.Info("Postgres connection string", zap.String("conn_str", connectionString))
+		pg.DB, err = sql.Open("postgres", connectionString)
+
 		if err == nil {
 			pg.DB.SetMaxOpenConns(pg.maxPoolSize)
 			pg.DB.SetMaxIdleConns(pg.maxPoolSize)

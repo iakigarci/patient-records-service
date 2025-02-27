@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT}:${PORT}"
+    env_file:
+      - .env
+    volumes:
+      - ./docs:/app/docs
+    depends_on:
+      db:
+        condition: service_healthy
+    working_dir: /app
+    networks:
+      - app-network
+
+  db:
+    image: postgres:14-alpine
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=md5
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

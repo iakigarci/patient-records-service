@@ -15,10 +15,12 @@ type Container struct {
 
 func NewContainer(cfg *config.Config,
 	logger *zap.Logger,
+	userRepository ports.UserRepository,
 ) *Container {
 	return &Container{
-		Config: cfg,
-		Logger: logger,
+		Config:         cfg,
+		Logger:         logger,
+		UserRepository: userRepository,
 	}
 }
 
