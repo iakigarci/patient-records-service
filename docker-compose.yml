@@ -11,6 +11,7 @@ services:
       - .env
     volumes:
       - ./docs:/app/docs
+      - ./internal/adapters/outbound/postgres/migrations:/app/migrations
     depends_on:
       db:
         condition: service_healthy
