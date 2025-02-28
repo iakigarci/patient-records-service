@@ -6,31 +6,33 @@ import (
 	"errors"
 
 	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/models/entities"
+	"github.com/jmoiron/sqlx"
 )
 
 type UserRepository struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func NewUserRepository(db *sql.DB) *UserRepository {
+func NewUserRepository(db *sqlx.DB) *UserRepository {
 	return &UserRepository{
 		db: db,
 	}
 }
 
 func (db *UserRepository) GetUserByEmail(ctx context.Context, email string) (*entities.User, error) {
+	user := &entities.User{}
+
 	query := NewQueryBuilder().
 		Query(BASE_USER_QUERY).
 		Where("email = $1").
 		AddArgs(email)
 
-	row := db.db.QueryRowContext(ctx, query.Build(), query.GetArgs()...)
-
-	var user entities.User
-	err := row.Scan(&user)
+	err := db.db.GetContext(ctx, user, query.Build(), query.GetArgs()...)
 	if err == sql.ErrNoRows {
 		return nil, errors.New("user not found")
+	} else if err != nil {
+		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }

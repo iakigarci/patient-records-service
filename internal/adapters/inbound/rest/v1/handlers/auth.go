@@ -8,7 +8,7 @@ import (
 )
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required" example:"user@example.com"`
+	Email    string `json:"email" binding:"required" example:"john.doe@example.com"`
 	Password string `json:"password" binding:"required" example:"password123"`
 }
 
@@ -57,7 +57,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := h.userService.GetUserByEmail(c.Request.Context(), req.Email)
+	user, err := h.userService.GetUserByCredentials(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "Invalid credentials"})
 		return

@@ -5,7 +5,15 @@ import (
 )
 
 var (
-	BASE_USER_QUERY = "SELECT id, email, password, created_at, updated_at FROM users"
+	BASE_USER_QUERY = `
+		SELECT id, 
+			email, 
+			password_hash,
+			address,
+			phone,
+			EXTRACT(EPOCH FROM created_at) as created_at,
+			EXTRACT(EPOCH FROM updated_at) as updated_at
+		FROM users`
 )
 
 type QueryBuilder struct {

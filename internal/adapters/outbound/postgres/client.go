@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/iakigarci/go-ddd-microservice-template/config"
+	"github.com/iakigarci/go-ddd-microservice-template/internal/adapters/outbound/postgres/migrations"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
 )
@@ -21,7 +23,7 @@ type Postgres struct {
 	connAttempts int
 	connTimeout  time.Duration
 
-	DB     *sql.DB
+	DB     *sqlx.DB
 	logger *zap.Logger
 }
 
@@ -31,6 +33,13 @@ func NewClient(config *config.Config, logger *zap.Logger) (*Postgres, error) {
 		logger.Error("failed to initialize postgres client", zap.Error(err))
 		return nil, err
 	}
+
+	// Run migrations
+	if err := migrations.RunMigrations(postgres.DB.DB); err != nil {
+		logger.Error("failed to run migrations", zap.Error(err))
+		return nil, err
+	}
+
 	return postgres, nil
 }
 
@@ -62,7 +71,7 @@ func initPg(config *config.Config, logger *zap.Logger) (*Postgres, error) {
 			config.Postgres.SSLMode,
 		)
 		pg.logger.Info("Postgres connection string", zap.String("conn_str", connectionString))
-		pg.DB, err = sql.Open("postgres", connectionString)
+		pg.DB, err = sqlx.Open("postgres", connectionString)
 
 		if err == nil {
 			pg.DB.SetMaxOpenConns(pg.maxPoolSize)

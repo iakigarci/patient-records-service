@@ -26,7 +26,7 @@ func New(userService ports.UserService, jwtSecret []byte, logger *zap.Logger) *a
 
 func (svc *authService) GenerateToken(user *entities.User) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": user.ID,
+		"user_id": user.Email,
 		"email":   user.Email,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 		"iat":     time.Now().Unix(),

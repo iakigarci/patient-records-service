@@ -12,5 +12,5 @@ type AuthService interface {
 }
 
 type UserService interface {
-	GetUserByEmail(ctx context.Context, email string) (*entities.User, error)
+	GetUserByCredentials(ctx context.Context, email, password string) (*entities.User, error)
 }
