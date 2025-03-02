@@ -11,16 +11,14 @@ import (
 )
 
 type authService struct {
-	userService ports.UserService
-	jwtSecret   []byte
-	logger      *zap.Logger
+	jwtSecret []byte
+	logger    *zap.Logger
 }
 
-func New(userService ports.UserService, jwtSecret []byte, logger *zap.Logger) *authService {
+func New(jwtSecret []byte, logger *zap.Logger) ports.AuthService {
 	return &authService{
-		userService: userService,
-		jwtSecret:   jwtSecret,
-		logger:      logger,
+		jwtSecret: jwtSecret,
+		logger:    logger,
 	}
 }
 

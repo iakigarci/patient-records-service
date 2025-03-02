@@ -20,57 +20,48 @@ func NewDiagnosticRepository(db *sqlx.DB) ports.DiagnosticRepository {
 	}
 }
 
-func (r *DiagnosticRepository) GetDiagnostics(ctx context.Context, filter *entities.DiagnosticFilter) ([]*entities.Diagnostic, error) {
+func (db *DiagnosticRepository) GetDiagnostics(ctx context.Context, filter *entities.DiagnosticFilter) ([]*entities.Diagnostic, error) {
 	query := NewQueryBuilder().
 		Query(BASE_DIAGNOSTIC_QUERY).
-		Where("d.diagnosis_date >= $1").
-		AddArgs(filter.StartDate).
 		OrderBy("d.diagnosis_date DESC")
 
 	var args []interface{}
 	var conditions []string
 	argPosition := 1
 
+	println(fmt.Sprintf("Filter %v", filter))
+
 	if filter.PatientName != nil && *filter.PatientName != "" {
-		conditions = append(conditions, fmt.Sprintf("p.name ILIKE $%d", argPosition))
-		args = append(args, "%"+*filter.PatientName+"%")
+		println(fmt.Sprintf("Patient Name %v", *filter.PatientName))
+		conditions = append(conditions, fmt.Sprintf("POSITION(LOWER($%d) IN LOWER(p.name)) > 0", argPosition))
+		args = append(args, strings.ToLower(*filter.PatientName))
 		argPosition++
 	}
 
 	if filter.StartDate != nil {
-		conditions = append(conditions, fmt.Sprintf("d.diagnosis_date >= $%d", argPosition))
-		args = append(args, *filter.StartDate)
+		conditions = append(conditions, fmt.Sprintf("DATE(diagnosis_date) >= DATE($%d::timestamp)", argPosition))
+		args = append(args, filter.StartDate)
 		argPosition++
 	}
 
 	if filter.EndDate != nil {
-		conditions = append(conditions, fmt.Sprintf("d.diagnosis_date <= $%d", argPosition))
-		args = append(args, *filter.EndDate)
+		conditions = append(conditions, fmt.Sprintf("DATE(diagnosis_date) <= DATE($%d::timestamp)", argPosition))
+		args = append(args, filter.EndDate)
 		argPosition++
 	}
 
 	if len(conditions) > 0 {
 		query.Where(strings.Join(conditions, " AND "))
+		query.AddArgs(args...)
 	}
 
-	rows, err := r.db.QueryxContext(ctx, query.Build())
+	println(fmt.Sprintf("Query %v", query.Build()))
+	println(fmt.Sprintf("Args %v", query.GetArgs()))
+
+	diagnostics, err := MultipleQuery[entities.Diagnostic](ctx, db.db, query.Build(), query.GetArgs()...)
 	if err != nil {
 		return nil, fmt.Errorf("error querying diagnoses: %v", err)
 	}
-	defer rows.Close()
 
-	var diagnoses []*entities.Diagnostic
-	for rows.Next() {
-		var d entities.Diagnostic
-		if err := rows.StructScan(&d); err != nil {
-			return nil, fmt.Errorf("error scanning diagnosis row: %v", err)
-		}
-		diagnoses = append(diagnoses, &d)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating diagnosis rows: %v", err)
-	}
-
-	return diagnoses, nil
+	return diagnostics, nil
 }

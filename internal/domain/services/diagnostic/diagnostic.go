@@ -16,6 +16,7 @@ type DiagnosticService struct {
 func (s *DiagnosticService) GetDiagnostics(ctx context.Context, filter *entities.DiagnosticFilter) ([]*entities.Diagnostic, error) {
 	diagnostics, err := s.diagnosticRepository.GetDiagnostics(ctx, filter)
 	if err != nil {
+		s.logger.Error("failed to get diagnostics", zap.Error(err))
 		return nil, err
 	}
 

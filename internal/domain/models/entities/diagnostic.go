@@ -1,6 +1,9 @@
 package entities
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type DiagnosticFilter struct {
 	PatientID   *string    `json:"patientId"`
@@ -12,10 +15,11 @@ type DiagnosticFilter struct {
 }
 
 type Diagnostic struct {
-	ID           string    `json:"id"`
-	PatientID    string    `json:"patientId"`
-	Date         time.Time `json:"date"`
-	DiagnosisID  string    `json:"diagnosisId"`
-	Status       string    `json:"status"`
-	Prescription *string   `json:"prescription"`
+	ID           string         `db:"id" json:"id"`
+	PatientID    string         `db:"patient_id" json:"patient_id"`
+	Date         float64        `db:"diagnosis_date" json:"diagnosis_date"`
+	Diagnosis    string         `db:"diagnosis" json:"diagnosis"`
+	Prescription sql.NullString `db:"prescription" json:"prescription"`
+	CreatedAt    float64        `db:"created_at" json:"created_at"`
+	UpdatedAt    float64        `db:"updated_at" json:"updated_at"`
 }

@@ -38,6 +38,7 @@ func New(config *config.Config, container *di.Container) *Router {
 		router.indexRoutes(v1)
 		router.authRoutes(v1)
 		router.swaggerRoutes(v1)
+		router.diagnosticRoutes(v1)
 	}
 
 	r.Run(fmt.Sprintf(":%d", config.HTTP.Port))
@@ -64,8 +65,8 @@ func (r *Router) authRoutes(rg *gin.RouterGroup) {
 		user.WithUserRepository(r.container.UserRepository),
 		user.WithLogger(r.container.Logger),
 	)
+
 	authService := auth.New(
-		userService,
 		[]byte(r.container.Config.Hash.Secret),
 		r.container.Logger,
 	)
@@ -86,8 +87,13 @@ func (r *Router) diagnosticRoutes(rg *gin.RouterGroup) {
 
 	diagnosticHandler := handlers.NewDiagnosticHandler(diagnosticService)
 
-	diagnosticRoutes := rg.Group("/diagnostic")
+	authService := auth.New(
+		[]byte(r.container.Config.Hash.Secret),
+		r.container.Logger,
+	)
+
+	diagnosticRoutes := rg.Group("/diagnostics", AuthMiddleware(authService))
 	{
-		diagnosticRoutes.GET("/", diagnosticHandler.GetDiagnostic)
+		diagnosticRoutes.GET("", diagnosticHandler.GetDiagnostic)
 	}
 }
