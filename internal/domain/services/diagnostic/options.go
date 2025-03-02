@@ -7,7 +7,7 @@ import (
 
 type ServiceOption func(*DiagnosticService)
 
-func New(opts ...ServiceOption) *DiagnosticService {
+func New(opts ...ServiceOption) ports.DiagnosticService {
 	options := &DiagnosticService{}
 	for _, opt := range opts {
 		opt(options)

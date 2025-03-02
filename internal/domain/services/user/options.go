@@ -7,7 +7,7 @@ import (
 
 type UserBuilderOption func(*UserSvc)
 
-func New(opts ...UserBuilderOption) *UserSvc {
+func New(opts ...UserBuilderOption) ports.UserService {
 	options := &UserSvc{}
 	for _, opt := range opts {
 		opt(options)

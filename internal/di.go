@@ -31,6 +31,5 @@ func NewContainer(cfg *config.Config,
 }
 
 func (c *Container) Shutdown() error {
-
 	return nil
 }
