@@ -10,6 +10,7 @@ import (
 type Container struct {
 	UserRepository       ports.UserRepository
 	DiagnosticRepository ports.DiagnosticRepository
+	PatientRepository    ports.PatientRepository
 	Config               *config.Config
 	Logger               *zap.Logger
 }
@@ -18,12 +19,14 @@ func NewContainer(cfg *config.Config,
 	logger *zap.Logger,
 	userRepository ports.UserRepository,
 	diagnosticRepository ports.DiagnosticRepository,
+	patientRepository ports.PatientRepository,
 ) *Container {
 	return &Container{
 		Config:               cfg,
 		Logger:               logger,
 		UserRepository:       userRepository,
 		DiagnosticRepository: diagnosticRepository,
+		PatientRepository:    patientRepository,
 	}
 }
 

@@ -12,4 +12,9 @@ type UserRepository interface {
 
 type DiagnosticRepository interface {
 	GetDiagnostics(ctx context.Context, filter *entities.DiagnosticFilter) ([]*entities.Diagnostic, error)
+	CreateDiagnostic(ctx context.Context, diagnostic *entities.Diagnostic) error
+}
+
+type PatientRepository interface {
+	GetPatientByID(ctx context.Context, id string) (*entities.Patient, error)
 }

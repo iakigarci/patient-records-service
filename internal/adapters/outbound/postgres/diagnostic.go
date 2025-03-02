@@ -29,10 +29,7 @@ func (db *DiagnosticRepository) GetDiagnostics(ctx context.Context, filter *enti
 	var conditions []string
 	argPosition := 1
 
-	println(fmt.Sprintf("Filter %v", filter))
-
 	if filter.PatientName != nil && *filter.PatientName != "" {
-		println(fmt.Sprintf("Patient Name %v", *filter.PatientName))
 		conditions = append(conditions, fmt.Sprintf("POSITION(LOWER($%d) IN LOWER(p.name)) > 0", argPosition))
 		args = append(args, strings.ToLower(*filter.PatientName))
 		argPosition++
@@ -55,13 +52,33 @@ func (db *DiagnosticRepository) GetDiagnostics(ctx context.Context, filter *enti
 		query.AddArgs(args...)
 	}
 
-	println(fmt.Sprintf("Query %v", query.Build()))
-	println(fmt.Sprintf("Args %v", query.GetArgs()))
-
 	diagnostics, err := MultipleQuery[entities.Diagnostic](ctx, db.db, query.Build(), query.GetArgs()...)
 	if err != nil {
 		return nil, fmt.Errorf("error querying diagnoses: %v", err)
 	}
 
 	return diagnostics, nil
+}
+
+func (db *DiagnosticRepository) CreateDiagnostic(ctx context.Context, diagnostic *entities.Diagnostic) error {
+	query := `
+		INSERT INTO diagnoses (
+			id, patient_id, diagnosis, prescription, diagnosis_date, created_at, updated_at
+		) VALUES (
+			gen_random_uuid(), $1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+		) RETURNING id, created_at, updated_at
+	`
+
+	err := db.db.QueryRowContext(ctx, query,
+		diagnostic.PatientID,
+		diagnostic.Diagnosis,
+		diagnostic.Prescription,
+		diagnostic.Date,
+	).Scan(&diagnostic.ID, &diagnostic.CreatedAt, &diagnostic.UpdatedAt)
+
+	if err != nil {
+		return fmt.Errorf("error creating diagnostic: %v", err)
+	}
+
+	return nil
 }

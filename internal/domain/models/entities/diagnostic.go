@@ -15,11 +15,11 @@ type DiagnosticFilter struct {
 }
 
 type Diagnostic struct {
-	ID           string         `db:"id" json:"id"`
-	PatientID    string         `db:"patient_id" json:"patient_id"`
-	Date         float64        `db:"diagnosis_date" json:"diagnosis_date"`
-	Diagnosis    string         `db:"diagnosis" json:"diagnosis"`
-	Prescription sql.NullString `db:"prescription" json:"prescription"`
-	CreatedAt    float64        `db:"created_at" json:"created_at"`
-	UpdatedAt    float64        `db:"updated_at" json:"updated_at"`
+	ID           string         `json:"id" db:"id"`
+	PatientID    string         `json:"patient_id" db:"patient_id"`
+	Date         time.Time      `json:"date" db:"diagnosis_date"`
+	Diagnosis    string         `json:"diagnosis" db:"diagnosis"`
+	Prescription sql.NullString `json:"prescription,omitempty" db:"prescription"`
+	CreatedAt    time.Time      `json:"created_at" db:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at" db:"updated_at"`
 }

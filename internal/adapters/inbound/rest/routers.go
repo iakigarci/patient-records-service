@@ -83,6 +83,7 @@ func (r *Router) diagnosticRoutes(rg *gin.RouterGroup) {
 	diagnosticService := diagnostic.New(
 		diagnostic.WithRepository(r.container.DiagnosticRepository),
 		diagnostic.WithLogger(r.container.Logger),
+		diagnostic.WithPatientRepository(r.container.PatientRepository),
 	)
 
 	diagnosticHandler := handlers.NewDiagnosticHandler(diagnosticService)
@@ -95,5 +96,6 @@ func (r *Router) diagnosticRoutes(rg *gin.RouterGroup) {
 	diagnosticRoutes := rg.Group("/diagnostics", AuthMiddleware(authService))
 	{
 		diagnosticRoutes.GET("", diagnosticHandler.GetDiagnostic)
+		diagnosticRoutes.POST("", diagnosticHandler.CreateDiagnostic)
 	}
 }

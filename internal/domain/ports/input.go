@@ -17,4 +17,5 @@ type UserService interface {
 
 type DiagnosticService interface {
 	GetDiagnostics(ctx context.Context, filter *entities.DiagnosticFilter) ([]*entities.Diagnostic, error)
+	CreateDiagnostic(ctx context.Context, diagnostic *entities.Diagnostic) error
 }

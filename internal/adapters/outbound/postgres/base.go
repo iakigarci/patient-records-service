@@ -29,6 +29,17 @@ var (
 			EXTRACT(EPOCH FROM d.updated_at) as updated_at
 		FROM diagnoses d
 		JOIN patients p ON p.id = d.patient_id`
+
+	BASE_PATIENT_QUERY = `
+		SELECT id,
+			name,
+			dni,
+			email, 
+			address, 
+			phone, 
+			EXTRACT(EPOCH FROM created_at) as created_at, 
+			EXTRACT(EPOCH FROM updated_at) as updated_at
+		FROM patients`
 )
 
 type QueryBuilder struct {

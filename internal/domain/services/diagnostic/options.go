@@ -27,3 +27,9 @@ func WithLogger(logger *zap.Logger) ServiceOption {
 		s.logger = logger
 	}
 }
+
+func WithPatientRepository(patientRepository ports.PatientRepository) ServiceOption {
+	return func(s *DiagnosticService) {
+		s.patientRepository = patientRepository
+	}
+}
