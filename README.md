@@ -1,73 +1,96 @@
-# TopDoctors backend code challenge
+# Patient Records Service
 
-## Ãndice
-1. [El problema propuesto](#el-problema-propuesto)
-2. [Nuestras expectativas](#nuestras-expectativas)
-3. [La entrega](#la-entrega)
-4. [Hazlo lo mejor que sabes](#hazlo-lo-mejor-que-sabes)
+A Go-based microservice for managing patient records and medical diagnoses, built using Domain-Driven Design (DDD) principles and a clean architecture approach.
 
-## El problema propuesto
+## ⚡ Features
 
-Uno de nuestros stakeholders nos solicita que desarrollemos una solución para
-consultar y almacenar datos de diagnóstico de pacientes en nuestros sistemas,
-esta solución aparte de funcionar internamente, necesita tener la capacidad
-para integrarse con otras aplicaciones. Ambas partes atesoran datos sensibles
-por lo que será necesario implementar una forma de autenticar las peticiones.
+- JWT-based authentication and authorization
+- Comprehensive patient management (CRUD operations)
+- Medical diagnostic records with history
+- Interactive Swagger/OpenAPI documentation
+- PostgreSQL database with versioned migrations
+- Clean architecture and DDD implementation
+- Robust error handling and logging
+- Unit and integration tests
+- Rate limiting and security middleware
 
-Para lograr este objetivo, haremos lo siguiente:
+## 🛠 Tech Stack
 
-- Un endpoint que requiera de un usuario y contraseña para generar un token de autenticación
-- Un endpoint protegido que permita consultar diagnósticos y filtrarlos por: nombre del paciente y/o fecha
-- Un endpoint protegido que permita almacenar diagnósticos para un paciente en concreto
+- Go 1.23.4
+- Gin Web Framework
+- PostgreSQL
+- Goose (database migrations)
+- Swagger/OpenAPI
+- Docker & Docker Compose
+- JWT Authentication
+- Zap Logger
+- Testify (testing)
+- Viper (configuration)
 
-Sobre la estructura de la base de datos, necesitamos que existan pacientes,
-sobre los cuales guardaremos los siguientes datos:
+## 📋 Prerequisites
 
-- nombre
-- dni
-- email
-- teléfono (opcional)
-- dirección (opcional)
+- Docker and Docker Compose
+- Go 1.23.4 or higher
+- Make
+- Git
 
-Estos pacientes tendrán una relación con sus datos de diagnóstico, sobre los
-cuáles guardaremos los siguientes datos:
+## 🏗 Project Structure 
+```bash
+.
+├── cmd/
+│ └── api/ # Application entry point
+├── internal/
+│ ├── adapters/ # Adapters layer (REST, DB)
+│ ├── domain/ # Domain layer (business logic)
+│ └── ports/ # Interfaces
+├── docs/ # Swagger documentation
+├── .env # Environment variables
+```
 
-- paciente
-- diagnóstico
-- prescripción (opcional)
-- fecha
 
-## Nuestras expectativas
+## ⚐ Getting Started
 
-Aunque normalmente trabajamos con Golang, no tenemos problema si nos entregas la
-solución en Javascript, Golang o Python. También siéntete libre de incorporar mejoras
-al problema propuesto, explícanos que has detectado y que camino has decidido tomar.
+1. Clone the repository:
+```bash
+git clone https://github.com/iakigarci/patient-records-service.git
+cd patient-records-service
+```
 
-Tu código debería ser capaz de hacer sonar las alarmas cuando hay un cambio que
-rompe alguna pieza, para eso no hay mejor remedio que realizar unos buenos tests.
-Se requiere tests en al menos la parte de la creación/almacenamiento de diagnósticos.
+2. Start the services:
+```bash
+docker-compose up -d
+```
 
-Para que nos sea fácil comprobar que tu solución funciona, documenta
-los pasos que tenemos que seguir para ponerla en marcha en el README.md del proyecto.
-Se valorará el uso de contenedores para facilitar la ejecución de la solución.
+3. Run database migrations (if not already run):
+```bash
+make migrate-up
+```
 
-Y por último no dudes en incluir todo aquello que consideres oportuno, o creas que
-aporta valor extra. Por ejemplo, un Swagger integrado en el proyecto para ver y probar
-los endpoints de la API, o un Postman que contenga los endpoints ya preparados.
+4. Check migration status:
+```bash
+make migrate-status
+```
 
-# La entrega
+5. Check container status:
+```bash
+docker ps
+```
 
-Y una vez terminado, ¿cómo nos lo entregas?
 
-Sencillo, puedes crear tu repositorio privado en github (u otro) y danos acceso, así también podemos
-ver como trabajas con git :).
-También puedes enviarnos la prueba por correo eletrónico si lo prefieres.
+## 🛣️ API Documentation
 
-# Hazlo lo mejor que sabes
+Once the service is running, you can access the Swagger documentation at:
+http://localhost:8080/v1/swagger/index.html
 
-Sabemos por experiencia que estas pruebas no son triviales, por eso dispones de un
-margen de tiempo bastante holgado para realizarla, no te apresures, disfruta de la
-experiencia, explíyate y si puedes trata de aprender algo nuevo en el camino.
+### Available Endpoints
 
-¡Un saludo!
-El equipo de backend
+- **POST** `/v1/auth/login` - User authentication
+- **GET** `/v1/diagnostics` - List diagnostics (protected)
+- **POST** `/v1/diagnostics` - Create diagnostic (protected)
+
+## 🛠️ Testing
+
+There are unit tests for the diagnostic service.
+```bash
+cd internal/domain/services/diagnostic
+```
