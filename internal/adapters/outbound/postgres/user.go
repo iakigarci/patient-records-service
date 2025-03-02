@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/models/entities"
+	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/ports"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -13,7 +14,7 @@ type UserRepository struct {
 	db *sqlx.DB
 }
 
-func NewUserRepository(db *sqlx.DB) *UserRepository {
+func NewUserRepository(db *sqlx.DB) ports.UserRepository {
 	return &UserRepository{
 		db: db,
 	}

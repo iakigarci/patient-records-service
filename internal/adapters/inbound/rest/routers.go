@@ -9,6 +9,7 @@ import (
 	di "github.com/iakigarci/go-ddd-microservice-template/internal"
 	"github.com/iakigarci/go-ddd-microservice-template/internal/adapters/inbound/rest/v1/handlers"
 	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/services/auth"
+	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/services/diagnostic"
 	"github.com/iakigarci/go-ddd-microservice-template/internal/domain/services/user"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -74,5 +75,19 @@ func (r *Router) authRoutes(rg *gin.RouterGroup) {
 	authRoutes := rg.Group("/auth")
 	{
 		authRoutes.POST("/login", authHandler.Login)
+	}
+}
+
+func (r *Router) diagnosticRoutes(rg *gin.RouterGroup) {
+	diagnosticService := diagnostic.New(
+		diagnostic.WithRepository(r.container.DiagnosticRepository),
+		diagnostic.WithLogger(r.container.Logger),
+	)
+
+	diagnosticHandler := handlers.NewDiagnosticHandler(diagnosticService)
+
+	diagnosticRoutes := rg.Group("/diagnostic")
+	{
+		diagnosticRoutes.GET("/", diagnosticHandler.GetDiagnostic)
 	}
 }

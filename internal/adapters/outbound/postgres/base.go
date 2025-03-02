@@ -14,6 +14,21 @@ var (
 			EXTRACT(EPOCH FROM created_at) as created_at,
 			EXTRACT(EPOCH FROM updated_at) as updated_at
 		FROM users`
+
+	BASE_DIAGNOSTIC_QUERY = `
+		SELECT id, 
+			diagnosis,
+			prescription,
+			diagnosis_date,
+			created_at,
+			updated_at,
+			patient_id,
+			patient_name,
+			patient_dni,
+			patient_email,
+			patient_phone,
+			patient_address
+		FROM diagnoses`
 )
 
 type QueryBuilder struct {

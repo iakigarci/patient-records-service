@@ -14,3 +14,7 @@ type AuthService interface {
 type UserService interface {
 	GetUserByCredentials(ctx context.Context, email, password string) (*entities.User, error)
 }
+
+type DiagnosticService interface {
+	GetDiagnostics(ctx context.Context, filter *entities.DiagnosticFilter) ([]*entities.Diagnostic, error)
+}

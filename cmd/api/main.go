@@ -37,10 +37,11 @@ func getDIContainer(cfg *config.Config, logger *zap.Logger) *di.Container {
 	}
 
 	userRepository := postgres.NewUserRepository(dbClient.DB)
-
+	diagnosticRepository := postgres.NewDiagnosticRepository(dbClient.DB)
 	return di.NewContainer(cfg,
 		logger,
 		userRepository,
+		diagnosticRepository,
 	)
 }
 
